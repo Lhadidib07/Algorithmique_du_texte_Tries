@@ -26,7 +26,7 @@ int hash(unsigned char key, int etat) {
 }
 
 // Crée un nouveau Trie
-Trie createTrie(int maxNode) {
+Trie createTrieHash(int maxNode) {
     Trie T = (Trie)malloc(sizeof(struct _trie));
     T->maxNode = maxNode;
     T->nextNode = 1; // Commence à 1 car 0 est l'état initial
@@ -59,7 +59,7 @@ void addTransition(Trie T, int startNode, int targetNode, unsigned char letter) 
 }
 
 // Ajouter un mot au Trie
-void insertInTrie(Trie T, unsigned char *word) {
+void insertInTrieHash(Trie T, unsigned char *word) {
     int etat = 0;
     int i = 0;
     while (word[i] != '\0') {
@@ -103,40 +103,218 @@ void freeTrie(Trie T) {
     free(T);
 }
 
-// Fonction pour afficher le Trie
-void printTrie(Trie T) {
-    printf("Affichage du Trie:\n");
-    for (int i = 0; i < T->maxNode; i++) {
-        if (T->transition[i] != NULL) {
-            List *current = T->transition[i];
-            while (current != NULL) {
-                printf("Node %d -> Letter: '%c' -> Target Node: %d\n", 
-                       current->startNode, current->letter, current->targetNode);
-                current = current->next;
+
+bool isInTrieHash(Trie T, unsigned char *word) {
+    int etat = 0;
+    int i = 0;
+    while (word[i] != '\0') {
+        int hashResult = hash(word[i], etat);
+        List *current = T->transition[hashResult];
+        bool found = false;
+        while (current != NULL) {
+            if (current->letter == word[i]) {
+                etat = current->targetNode;
+                found = true;
+                break;
             }
+            current = current->next;
+        }
+        if (!found) {
+            return false;
+        }
+        i++;
+    }
+    return T->finite[etat];
+}
+
+
+void insertPrefixesInTrie(Trie T, unsigned char *word) {
+    int len = strlen((char *)word);
+    for (int i = 1; i <= len; i++) {
+        unsigned char prefix[i + 1];
+        strncpy((char *)prefix, (char *)word, i);
+        prefix[i] = '\0';
+        insertInTrieHash(T, prefix);
+    }
+}
+
+void insertSuffixesInTrie(Trie T, unsigned char *word) {
+    int len = strlen((char *)word);
+    for (int i = 0; i < len; i++) {
+        insertInTrieHash(T, &word[i]);
+    }
+}
+
+void insertFactorsInTrie(Trie T, unsigned char *word) {
+    int len = strlen((char *)word);
+    for (int i = 0; i < len; i++) {
+        for (int j = i + 1; j <= len; j++) {
+            unsigned char factor[j - i + 1];
+            strncpy((char *)factor, (char *)&word[i], j - i);
+            factor[j - i] = '\0';
+            insertInTrieHash(T, factor);
         }
     }
 }
 
 int main() {
-    Trie T = createTrie(256);
 
-    if (T == NULL || T->transition == NULL || T->finite == NULL) {
+    unsigned char mot[100];
+    char reponse[10];
+    bool chercher = true; 
+    bool insert = true;
+    int choixInsertion = -1;
+    int choix = -1;
+    int tester = true; 
+
+    printf("\n\t ************  le trie avec le hachage  ************\n");
+
+    Trie THash = createTrieHash(256);
+        if (THash == NULL || THash->transition == NULL || THash->finite == NULL) {
         fprintf(stderr, "Memory allocation failed!\n");
         exit(EXIT_FAILURE);
     }
 
-
-    // 4. Vérifier les états finaux
-    printf("Final states:\n");
-    for (int i = 0; i < T->nextNode; i++) {
-        if (T->finite[i]) {
-            printf("State %d is a final state\n", i);
-        }
+    Trie Tprefixes = createTrieHash(256);
+        if (Tprefixes == NULL || Tprefixes->transition == NULL || Tprefixes->finite == NULL) {
+        fprintf(stderr, "Memory allocation failed pour le trie des  prefixes !\n");
+        exit(EXIT_FAILURE);
     }
 
+    Trie Tsufixes  = createTrieHash(256);
+        if (Tsufixes == NULL || Tsufixes->transition == NULL || Tsufixes->finite == NULL) {
+        fprintf(stderr, "Memory allocation failed pour le trie des  sufixes  !\n");
+        exit(EXIT_FAILURE);
+    }
+
+    Trie Tfactor  = createTrieHash(256);
+        if (Tfactor == NULL || Tfactor->transition == NULL || Tfactor->finite == NULL) {
+        fprintf(stderr, "Memory allocation failed pour le trie des facteur  !\n");
+        exit(EXIT_FAILURE);
+    }
+
+
+    insert = true;
+    do{ 
+        printf(" 1. Insertion des mots dans le trie \n");
+        printf(" 2. Recherche d'un mot dans le trie \n");
+        printf(" 3. Insertion de prefix ,sufix et facotor d'un mot \n");
+        printf(" 4. Recherches de prefix ,sufix et facotor d'un mot \n");
+
+        printf(" 0. Pour sortir \n");
+        printf("entrez votre choix : \t");
+        scanf("%d", &choix);
+
+        switch (choix)
+        {
+            case 0:
+                tester = false;
+            break;
+            case 1:
+                printf("****** faire l'insertion des mots dans le trie \n");
+                mot[0] = '\0';
+                printf(" entrez le mot : \t");
+                scanf("%s", mot);
+                insertInTrieHash(THash, mot);
+            break;
+
+            case 2:
+                mot[0] = '\0';
+                printf("****** Entrez le mot que vous vouler chercher dans le trie : \t");
+                scanf("%s", mot);
+                printf("\n \t  \"%s\" est dans le trie ? %s\n", mot, isInTrieHash(THash, mot) ? "Oui" : "Non");
+            break;
+
+            case 3:
+                mot[0] = '\0';
+                printf("****** insertion de prefix ,sufix et facotor d'un mot \n");
+                printf("entrez votre mot : \t");
+                scanf("%s", mot);
+                do{ 
+                    printf("\n*********************%s*******************************\n",mot);
+                    printf(" 1. insertion des prefixe  \n");
+                    printf(" 2. insertion des suffixe  \n");
+                    printf(" 3. insertion des facteur  \n");
+                    printf(" 0. Pour sortir \n");
+                    printf("faites votre choix : \t");
+                    scanf("%d",&choixInsertion);
+                    switch (choixInsertion)
+                    {
+                        case 1:
+                            printf("\n insertion des prefixe d'un mot dans le trie \n");
+                            insertPrefixesInTrie(Tprefixes, mot);
+                            break;
+                        case 2:
+                            printf(" insertion des suffixe d'un mot dans le trie \n");
+                            insertSuffixesInTrie(Tsufixes, mot);
+                        break;
+                        case 3: 
+                            printf(" insertion des facteur d'un mot dans le trie \n");
+                            insertFactorsInTrie(Tfactor, mot);
+                        break;
+                        case 0:
+                        break;
+                        
+                        default:
+                            printf(" choix invalide \n");
+                        break;
+                    }
+                }while(choixInsertion != 0);
+                
+
+            break;
+            case 4:
+           
+                do{ 
+                    mot[0] = '\0';
+                    printf("****** Entrez le mot que vous vouler chercher dans le trie : \t");
+                    scanf("%s", mot);
+                    printf("\n*********************%s*******************************\n",mot);
+                    printf(" 1. Rechercher dans prefixe trie \n");
+                    printf(" 2. Rechercher dans sufixe trie   \n");
+                    printf(" 3. Rechercher dans facteur trie  \n");
+                    printf(" 0. Pour sortir \n");
+                    printf("faites votre choix : \t");
+                    scanf("%d",&choixInsertion);
+                    switch (choixInsertion)
+                    {
+                        case 1:
+                            printf("\n insertion des prefixe d'un mot dans le trie \n");
+                            insertPrefixesInTrie(Tprefixes, mot);
+                            printf("\n \t  \"%s\" est dans le trie des préfixes ? %s\n", mot, isInTrieHash(Tprefixes, mot) ? "Oui" : "Non");
+
+                            break;
+                        case 2:
+                            printf(" insertion des suffixe d'un mot dans le trie \n");
+                            insertSuffixesInTrie(Tsufixes, mot);
+                            printf("\n \t  \"%s\" est dans le trie des suffixes? %s\n", mot, isInTrieHash(Tsufixes, mot) ? "Oui" : "Non");
+
+                        break;
+                        case 3: 
+                            printf(" insertion des facteur d'un mot dans le trie \n");
+                            insertFactorsInTrie(Tfactor, mot);
+                            printf("\n \t  \"%s\" est dans le trie des facteurs  ? %s\n", mot, isInTrieHash(Tfactor, mot) ? "Oui" : "Non");
+
+                        break;
+                        case 0:
+                        break;
+                        
+                        default:
+                            printf(" choix invalide \n");
+                        break;
+                    }
+                }while(choixInsertion != 0);
+                
+
+            break;
+            
+            default:
+                printf(" choix invalide \n");
+            break;
+        }
+    }while (tester);
+   
     
-    printTrie(T);
 
 
     return 0;
