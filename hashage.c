@@ -76,7 +76,7 @@ void insertInTrieHash(Trie T, unsigned char *word) {
             }
             current = current->next;
         }
-        // Si aucune transition n'a été trouvée pour cette lettre
+        // Si aucune transition n'a été trouvere pour cette lettre
         if (!found) {
             int nextEtat = T->nextNode++;
             addTransition(T, etat, nextEtat, word[i]);
@@ -157,165 +157,50 @@ void insertFactorsInTrie(Trie T, unsigned char *word) {
     }
 }
 
-int main() {
 
-    unsigned char mot[100];
-    char reponse[10];
-    bool chercher = true; 
-    bool insert = true;
-    int choixInsertion = -1;
-    int choix = -1;
-    int tester = true; 
-
-    printf("\n\t ************  le trie avec le hachage  ************\n");
-
+int main(void) {
     Trie THash = createTrieHash(256);
-        if (THash == NULL || THash->transition == NULL || THash->finite == NULL) {
-        fprintf(stderr, "Memory allocation failed!\n");
-        exit(EXIT_FAILURE);
-    }
-
     Trie Tprefixes = createTrieHash(256);
-        if (Tprefixes == NULL || Tprefixes->transition == NULL || Tprefixes->finite == NULL) {
-        fprintf(stderr, "Memory allocation failed pour le trie des  prefixes !\n");
-        exit(EXIT_FAILURE);
-    }
-
     Trie Tsufixes  = createTrieHash(256);
-        if (Tsufixes == NULL || Tsufixes->transition == NULL || Tsufixes->finite == NULL) {
-        fprintf(stderr, "Memory allocation failed pour le trie des  sufixes  !\n");
-        exit(EXIT_FAILURE);
-    }
-
     Trie Tfactor  = createTrieHash(256);
-        if (Tfactor == NULL || Tfactor->transition == NULL || Tfactor->finite == NULL) {
-        fprintf(stderr, "Memory allocation failed pour le trie des facteur  !\n");
-        exit(EXIT_FAILURE);
+
+    printf("----------------------Test insertInTrie(t, \"algodutexte\")----------------------\n");
+
+    insertInTrieHash(THash, (unsigned char *)"algodutexte");
+
+    if (isInTrieHash(THash, (unsigned char *)"algodutexte") == 1) {
+        printf("Le mot 'algodutexte' existe deja.\n");
+    } else {
+        printf("Ce mot n existe pas dans ce trie.\n");
     }
 
+    if (isInTrieHash(THash, (unsigned char *)"tpalgo") == 1) {
+        printf("Le mot 'tpalgo' existe deja .\n");
+    } else {
+        printf("Le mot 'tpalgo' n existe pas dans ce trie.\n");
+    }
 
-    insert = true;
-    do{ 
-        printf(" 1. Insertion des mots dans le trie \n");
-        printf(" 2. Recherche d'un mot dans le trie \n");
-        printf(" 3. Insertion de prefix ,sufix et facotor d'un mot \n");
-        printf(" 4. Recherches de prefix ,sufix et facotor d'un mot \n");
+    char recherches[][100] = {
+        "alg", "algo", "algodutexte", "tpalgo", "texte"
+    };
+    printf("---------------------- Test Prefix ----------------------\n");
 
-        printf(" 0. Pour sortir \n");
-        printf("entrez votre choix : \t");
-        scanf("%d", &choix);
+    insertPrefixesInTrie(Tprefixes, "algodutexte");
+    for(int i=0; i<6; i++){
+        printf(" - Prefixe %s trouver ? %s\n", recherches[i], isInTrieHash(Tprefixes,recherches[i]) ? "Oui" : "Non");
+    }
 
-        switch (choix)
-        {
-            case 0:
-                tester = false;
-            break;
-            case 1:
-                printf("****** faire l'insertion des mots dans le trie \n");
-                mot[0] = '\0';
-                printf(" entrez le mot : \t");
-                scanf("%s", mot);
-                insertInTrieHash(THash, mot);
-            break;
+    printf("---------------------- Test Sufix ----------------------\n");
 
-            case 2:
-                mot[0] = '\0';
-                printf("****** Entrez le mot que vous vouler chercher dans le trie : \t");
-                scanf("%s", mot);
-                printf("\n \t  \"%s\" est dans le trie ? %s\n", mot, isInTrieHash(THash, mot) ? "Oui" : "Non");
-            break;
-
-            case 3:
-                mot[0] = '\0';
-                printf("****** insertion de prefix ,sufix et facotor d'un mot \n");
-                printf("entrez votre mot : \t");
-                scanf("%s", mot);
-                do{ 
-                    printf("\n*********************%s*******************************\n",mot);
-                    printf(" 1. insertion des prefixe  \n");
-                    printf(" 2. insertion des suffixe  \n");
-                    printf(" 3. insertion des facteur  \n");
-                    printf(" 0. Pour sortir \n");
-                    printf("faites votre choix : \t");
-                    scanf("%d",&choixInsertion);
-                    switch (choixInsertion)
-                    {
-                        case 1:
-                            printf("\n insertion des prefixe d'un mot dans le trie \n");
-                            insertPrefixesInTrie(Tprefixes, mot);
-                            break;
-                        case 2:
-                            printf(" insertion des suffixe d'un mot dans le trie \n");
-                            insertSuffixesInTrie(Tsufixes, mot);
-                        break;
-                        case 3: 
-                            printf(" insertion des facteur d'un mot dans le trie \n");
-                            insertFactorsInTrie(Tfactor, mot);
-                        break;
-                        case 0:
-                        break;
-                        
-                        default:
-                            printf(" choix invalide \n");
-                        break;
-                    }
-                }while(choixInsertion != 0);
-                
-
-            break;
-            case 4:
-           
-                do{ 
-                    mot[0] = '\0';
-                    printf("****** Entrez le mot que vous vouler chercher dans le trie : \t");
-                    scanf("%s", mot);
-                    printf("\n*********************%s*******************************\n",mot);
-                    printf(" 1. Rechercher dans prefixe trie \n");
-                    printf(" 2. Rechercher dans sufixe trie   \n");
-                    printf(" 3. Rechercher dans facteur trie  \n");
-                    printf(" 0. Pour sortir \n");
-                    printf("faites votre choix : \t");
-                    scanf("%d",&choixInsertion);
-                    switch (choixInsertion)
-                    {
-                        case 1:
-                            printf("\n insertion des prefixe d'un mot dans le trie \n");
-                            insertPrefixesInTrie(Tprefixes, mot);
-                            printf("\n \t  \"%s\" est dans le trie des préfixes ? %s\n", mot, isInTrieHash(Tprefixes, mot) ? "Oui" : "Non");
-
-                            break;
-                        case 2:
-                            printf(" insertion des suffixe d'un mot dans le trie \n");
-                            insertSuffixesInTrie(Tsufixes, mot);
-                            printf("\n \t  \"%s\" est dans le trie des suffixes? %s\n", mot, isInTrieHash(Tsufixes, mot) ? "Oui" : "Non");
-
-                        break;
-                        case 3: 
-                            printf(" insertion des facteur d'un mot dans le trie \n");
-                            insertFactorsInTrie(Tfactor, mot);
-                            printf("\n \t  \"%s\" est dans le trie des facteurs  ? %s\n", mot, isInTrieHash(Tfactor, mot) ? "Oui" : "Non");
-
-                        break;
-                        case 0:
-                        break;
-                        
-                        default:
-                            printf(" choix invalide \n");
-                        break;
-                    }
-                }while(choixInsertion != 0);
-                
-
-            break;
-            
-            default:
-                printf(" choix invalide \n");
-            break;
-        }
-    }while (tester);
-   
-    
-
-
+    insertSuffixesInTrie(Tsufixes,"algodutexte");
+    for(int i=0; i<6; i++){
+        printf(" - Suffixe %s trouver ? %s\n",recherches[i] ,isInTrieHash(Tsufixes, recherches[i]) ? "Oui" : "Non");
+    }
+    printf("---------------------- Test Facteurs ----------------------\n");
+    insertFactorsInTrie(Tfactor, "algodutexte");
+    for(int i=0; i<6; i++){
+        printf(" - Facteur %s trouver ? %s\n", recherches[i] ,isInTrieHash(Tfactor, recherches[i]) ? "Oui" : "Non");
+    }
     return 0;
 }
+
