@@ -84,26 +84,6 @@ void insertSuffixes(Trie T, unsigned char *word){
 }
 
 
-void printTrie(Trie T) {
-    // Afficher les mots dans le Trie
-    for (int i = 0; i < T->maxNode; i++) {
-        bool hasTransition = false;
-        for (int j = 0; j < 256; j++) {
-            if (T->transition[i][j] != -1) {
-                hasTransition = true;
-                break;
-            }
-        }
-        if (hasTransition) {
-            for (int j = 0; j < 256; j++) {
-                if (T->transition[i][j] != -1) {
-                    printf("%c/", j); // Ajoute un slash après chaque caractère
-                }
-            }
-            printf("\n"); // Ajoute une nouvelle ligne à la fin de chaque mot
-        }
-    }
-}
 
 /*
 int main(){
@@ -152,7 +132,7 @@ int main(){
 int main() {
 
     unsigned char mot[] = "algodutext";
-    printf("\n\t ************ Trie avec des matrices de transition ************ \n");
+    printf("\n\t ************ Trie avec des matrices de transition ************ \n\n");
     
     // Créer un trie avec une taille maximale de 100 nœuds
     Trie T = createTrie(100);
@@ -173,22 +153,22 @@ int main() {
     insertFactors(Tfacteurs, mot);
 
     // Liste des mots à chercher dans le trie
-    unsigned char *motsARechercher[] = {"algodutext", "algo", "du", "text", "hello", "t","a"};
+    char *motsARechercher[] = {"algodutext", "algo", "du", "text", "hello", "t","a"};
     int nombreMots = 6;
 
     // Rechercher les mots prédéfinis dans le trie
-    printf("\n\t ************ Recherche des mots dans le trie ************ \n");
+    printf("\n\t ************ Recherche des mots dans le trie ************ \n\n");
     for(int i = 0; i < nombreMots; i++) {
-        if(isInTrie(T, motsARechercher[i])) {
+        if(isInTrie(T, (unsigned char *)motsARechercher[i])) {
             printf("Le mot \"%s\" est dans le trie\n", motsARechercher[i]);
         } else {
             printf("Le mot \"%s\" n'est pas dans le trie\n", motsARechercher[i]);
         }
     }
 
-    printf("\n\t ************ Recherche des mots dans le trie des sufixes ************ \n");
+    printf("\n\t ************ Recherche des mots dans le trie des sufixes ************ \n\n");
     for(int i = 0; i < nombreMots; i++) {
-        if(isInTrie(Tsuffixes, motsARechercher[i])) {
+        if(isInTrie(Tsuffixes, (unsigned char *)motsARechercher[i])) {
             printf("Le mot \"%s\" est dans le trie\n", motsARechercher[i]);
         } else {
             printf("Le mot \"%s\" n'est pas dans le trie\n", motsARechercher[i]);
@@ -196,22 +176,21 @@ int main() {
     }
 
 
-    printf("\n\t ************ Recherche des mots dans le trie des prefixes ************ \n");
+    printf("\n\t ************ Recherche des mots dans le trie des prefixes ************ \n\n");
     printf("voila les facteurs dans ma trie ");
-    printTrie(Tprefixes);
     for(int i = 0; i < nombreMots; i++) {
-        if(isInTrie(Tprefixes, motsARechercher[i])) {
+        if(isInTrie(Tprefixes, (unsigned char *)motsARechercher[i])) {
             printf("Le mot \"%s\" est dans le trie\n", motsARechercher[i]);
         } else {
             printf("Le mot \"%s\" n'est pas dans le trie\n", motsARechercher[i]);
         }
     }
 
-    printf("\n\t ************ Recherche des mots dans le trie des facteur ************ \n");
+    printf("\n\t ************ Recherche des mots dans le trie des facteur ************ \n\n");
      
 
     for(int i = 0; i < nombreMots; i++) {
-        if(isInTrie(Tfacteurs, motsARechercher[i])) {
+        if(isInTrie(Tfacteurs, (unsigned char *)motsARechercher[i])) {
             printf("Le mot \"%s\" est dans le trie\n", motsARechercher[i]);
         } else {
             printf("Le mot \"%s\" n'est pas dans le trie\n", motsARechercher[i]);

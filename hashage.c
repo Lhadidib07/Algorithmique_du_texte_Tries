@@ -60,12 +60,12 @@ void addTransition(Trie T, int startNode, int targetNode, unsigned char letter) 
 
 // Ajouter un mot au Trie
 void insertInTrieHash(Trie T, unsigned char *word) {
-    int etat = 0;
-    int i = 0;
+    int etat = 0, i = 0, hashResult=0;
+    bool found = false;
     while (word[i] != '\0') {
-        int hashResult = hash(word[i], etat);
+        hashResult = hash(word[i], etat);
         List *current = T->transition[hashResult];
-        bool found = false;
+        found = false;
        // Parcourir la liste d'adjacence pour trouver la transition
         while (current != NULL) {
             if (current->letter == word[i]) {
@@ -105,13 +105,17 @@ void freeTrie(Trie T) {
 
 
 bool isInTrieHash(Trie T, unsigned char *word) {
-    int etat = 0;
-    int i = 0;
+    int etat = 0, i = 0,hashResult=0;
+    bool found = false;
+
+    // Parcourir le mot lettre par lettre
     while (word[i] != '\0') {
-        int hashResult = hash(word[i], etat);
+        hashResult = hash(word[i], etat);
+        // Parcourir la liste d'adjacence pour trouver la transition
         List *current = T->transition[hashResult];
-        bool found = false;
+        found = false;
         while (current != NULL) {
+            // Si la transition existe, avancer vers le nœud cible
             if (current->letter == word[i]) {
                 etat = current->targetNode;
                 found = true;
@@ -119,11 +123,13 @@ bool isInTrieHash(Trie T, unsigned char *word) {
             }
             current = current->next;
         }
+        // Si aucune transition n'a été trouvée pour cette lettre
         if (!found) {
             return false;
         }
         i++;
     }
+    // retourné 1 si vrai 
     return T->finite[etat];
 }
 
@@ -131,16 +137,20 @@ bool isInTrieHash(Trie T, unsigned char *word) {
 void insertPrefixesInTrie(Trie T, unsigned char *word) {
     int len = strlen((char *)word);
     for (int i = 1; i <= len; i++) {
-        unsigned char prefix[i + 1];
-        strncpy((char *)prefix, (char *)word, i);
-        prefix[i] = '\0';
-        insertInTrieHash(T, prefix);
+        unsigned char *prefix = (unsigned char *)malloc(i + 1); // +1 pour le caractère nul final 
+        strncpy((char *)prefix, (char *)word, i);// copier les i premiers caractères du mot dans le préfixe 
+        prefix[i] = '\0';   // Null terminate the prefix
+        insertInTrieHash(T, prefix); // insérer le préfixe dans le trie
+        free(prefix);
     }
 }
 
 void insertSuffixesInTrie(Trie T, unsigned char *word) {
     int len = strlen((char *)word);
+    // parcourir le mot lettre par lettre
     for (int i = 0; i < len; i++) {
+        // insérer le sous-mot commençant à l'indice i 
+        // &word[i] est l'adresse du i-ème caractère du mot
         insertInTrieHash(T, &word[i]);
     }
 }
@@ -164,18 +174,21 @@ int main(void) {
     Trie Tsufixes  = createTrieHash(256);
     Trie Tfactor  = createTrieHash(256);
 
-    printf("----------------------Test insertInTrie(t, \"algodutexte\")----------------------\n");
+    printf("\t insertion de algodutext \n");
 
     insertInTrieHash(THash, (unsigned char *)"algodutexte");
 
+
+    printf("\n\t ----------------------tester si un mot existe dans un trie ----------------------\n\n");
+
     if (isInTrieHash(THash, (unsigned char *)"algodutexte") == 1) {
-        printf("Le mot 'algodutexte' existe deja.\n");
+        printf("Le mot 'algodutexte' existe dans le trie .\n");
     } else {
         printf("Ce mot n existe pas dans ce trie.\n");
     }
 
     if (isInTrieHash(THash, (unsigned char *)"tpalgo") == 1) {
-        printf("Le mot 'tpalgo' existe deja .\n");
+        printf("Le mot 'tpalgo' existe dasn le trie  .\n");
     } else {
         printf("Le mot 'tpalgo' n existe pas dans ce trie.\n");
     }
@@ -183,23 +196,25 @@ int main(void) {
     char recherches[][100] = {
         "alg", "algo", "algodutexte", "tpalgo", "texte"
     };
-    printf("---------------------- Test Prefix ----------------------\n");
 
-    insertPrefixesInTrie(Tprefixes, "algodutexte");
+    printf("\n\t ---------- insertion des prefix de algodutext ------------\n");
+    insertPrefixesInTrie(Tprefixes, (unsigned char *)"algodutexte");
+
+    printf("\n\t ---------------------- Test Prefix ----------------------\n");
     for(int i=0; i<6; i++){
-        printf(" - Prefixe %s trouver ? %s\n", recherches[i], isInTrieHash(Tprefixes,recherches[i]) ? "Oui" : "Non");
+        printf(" - Prefixe %s trouver ? %s\n", recherches[i], isInTrieHash(Tprefixes, (unsigned char *)recherches[i]) ? "Oui" : "Non");
     }
 
-    printf("---------------------- Test Sufix ----------------------\n");
+    printf("\n\t ---------------------- Test Sufix ----------------------\n\n ");
 
-    insertSuffixesInTrie(Tsufixes,"algodutexte");
+    insertSuffixesInTrie(Tsufixes, (unsigned char *)"algodutexte");
     for(int i=0; i<6; i++){
-        printf(" - Suffixe %s trouver ? %s\n",recherches[i] ,isInTrieHash(Tsufixes, recherches[i]) ? "Oui" : "Non");
+        printf(" - Suffixe %s trouver ? %s\n",recherches[i] ,isInTrieHash(Tsufixes, (unsigned char *)recherches[i]) ? "Oui" : "Non");
     }
-    printf("---------------------- Test Facteurs ----------------------\n");
-    insertFactorsInTrie(Tfactor, "algodutexte");
+    printf("\n\t ---------------------- Test Facteurs ----------------------\n\n");
+    insertFactorsInTrie(Tfactor, (unsigned char *)"algodutexte");
     for(int i=0; i<6; i++){
-        printf(" - Facteur %s trouver ? %s\n", recherches[i] ,isInTrieHash(Tfactor, recherches[i]) ? "Oui" : "Non");
+        printf(" - Facteur %s trouver ? %s\n", recherches[i] ,isInTrieHash(Tfactor, (unsigned char *)recherches[i]) ? "Oui" : "Non");
     }
     return 0;
 }
